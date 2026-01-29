@@ -16,8 +16,12 @@ namespace Clock
         {
             InitializeComponent();
 
+            
+
             this.Load += MainForm_Load;
         }
+
+
 
 
         //обработчик события Load (Start Unity)
@@ -40,7 +44,7 @@ namespace Clock
 
             if (checkBoxShowWeekday.Checked)
             {
-                labelTime.Text += $"\n{DateTime.Now.ToString("ddddd")}";
+                labelTime.Text += $"\n{DateTime.Now.DayOfWeek}";
             }
         }
     }
