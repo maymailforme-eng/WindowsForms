@@ -46,6 +46,8 @@ namespace Clock
             {
                 labelTime.Text += $"\n{DateTime.Now.DayOfWeek}";
             }
+
+            notifyIcon.Text = labelTime.Text;
         }
 
 
