@@ -48,14 +48,27 @@ namespace Clock
             }
         }
 
+
+        void SetVisibility(bool visible)
+        {
+            checkBoxShowDate.Visible = visible;
+            checkBoxShowWeekday.Visible = visible;
+            buttonHideControls.Visible = visible;
+            this.ShowInTaskbar = visible;
+
+            this.FormBorderStyle = visible ? FormBorderStyle.FixedToolWindow : FormBorderStyle.None;
+            this.TransparencyKey = visible ? Color.Empty : this.BackColor;
+        }
+
         //обработчик кнопки buttonHideContols
         private void buttonHideControls_Click(object sender, EventArgs e)
         {
-            this.FormBorderStyle = FormBorderStyle.None;
-            checkBoxShowDate.Visible = false;
-            checkBoxShowWeekday.Visible = false;
-            buttonHideControls.Visible = false;
-            this.ShowInTaskbar = false;
+            SetVisibility(false);
+        }
+
+        private void labelTime_DoubleClick(object sender, EventArgs e)
+        {
+            SetVisibility(true);
         }
     }
 }
