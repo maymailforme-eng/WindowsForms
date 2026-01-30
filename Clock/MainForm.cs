@@ -16,8 +16,6 @@ namespace Clock
         {
             InitializeComponent();
 
-            
-
             this.Load += MainForm_Load;
         }
 
@@ -34,7 +32,7 @@ namespace Clock
 
             tsmiShowControls.Checked = true;
             tsmiBGC_1.Checked = true;
-            controlTextToolStripMenuItem.Checked = true;
+            tsmiFGC_1.Checked = true;
         }
 
 
@@ -134,17 +132,10 @@ namespace Clock
             this.Activate();
         }
 
-        //обработчик цвета шрифта
-        private void tsmiForegroundColor_Click(object sender, EventArgs e)
-        {
-            //labelTime.ForeColor = tsmiForegroundColor.Checked ? ColorTranslator.FromHtml("DarkRed") : SystemColors.ControlText;
-        }
 
-        //обработчик цвета фона
-        private void tsmiBackgroundColor_Click(object sender, EventArgs e)
-        {
-            //labelTime.BackColor = tsmiBackgroundColor.Checked ? SystemColors.Info : SystemColors.Highlight;
-        }
+        //////////////////////////////////////////////////////////////////////////////////////////////////////
+        //ЦВЕТА
+        //
 
         //усановить цвет фона 1
         private void tsmiBGC_1_Click(object sender, EventArgs e)
@@ -164,7 +155,7 @@ namespace Clock
 
 
         //усановить цвет шрифта 1
-        private void controlTextToolStripMenuItem_Click(object sender, EventArgs e)
+        private void tsmiFGC_1_Click(object sender, EventArgs e)
         {
             tsmiFGC_2.Checked = false;
             labelTime.ForeColor = SystemColors.ControlText;
@@ -174,7 +165,7 @@ namespace Clock
         //усановить цвет шрифта 2
         private void tsmiFGC_2_Click(object sender, EventArgs e)
         {
-            controlTextToolStripMenuItem.Checked = false;
+            tsmiFGC_1.Checked = false;
             labelTime.ForeColor = ColorTranslator.FromHtml("DarkRed");
         }
     }
