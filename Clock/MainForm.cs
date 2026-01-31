@@ -16,9 +16,11 @@ namespace Clock
         {
             InitializeComponent();
 
-            
+            tsmiShowControls.Checked = true;
 
             this.Load += MainForm_Load;
+
+
         }
 
 
@@ -65,12 +67,62 @@ namespace Clock
         //обработчик кнопки buttonHideContols
         private void buttonHideControls_Click(object sender, EventArgs e)
         {
-            SetVisibility(false);
+            tsmiShowControls.Checked = false;
         }
 
         private void labelTime_DoubleClick(object sender, EventArgs e)
         {
-            SetVisibility(true);
+            tsmiShowControls.Checked = true;
+        }
+
+        //обработчик Topmost
+        private void tsmiTopmost_CheckedChanged(object sender, EventArgs e)
+        {
+            //this.TopMost = tsmiTopmost.Checked;
+
+            this.TopMost = (sender as ToolStripMenuItem).Checked;
+        }
+
+
+        //обработчик tsmiShowControls
+        private void tsmiShowControls_CheckedChanged(object sender, EventArgs e)
+        {
+            SetVisibility(tsmiShowControls.Checked);
+        }
+
+
+        private void tsmiExit_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (!this.TopMost)
+            {
+                this.TopMost = true;
+                this.TopMost = false;
+            }
+        }
+
+        private void checkBoxShowDate_CheckedChanged(object sender, EventArgs e)
+        {
+            tsmiShowDate.Checked = (sender as CheckBox).Checked;
+        }
+
+        private void checkBoxShowWeekday_CheckedChanged(object sender, EventArgs e)
+        {
+            tsmiShowWeekday.Checked = (sender as CheckBox).Checked;
+        }
+
+        private void tsmiShowDate_CheckedChanged(object sender, EventArgs e)
+        {
+            checkBoxShowDate.Checked = (sender as ToolStripMenuItem).Checked;
+        }
+
+        private void tsmiShowWeekday_CheckedChanged(object sender, EventArgs e)
+        {
+            checkBoxShowWeekday.Checked = (sender as ToolStripMenuItem).Checked;
         }
     }
 }
