@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,8 +15,18 @@ namespace Clock
     public partial class MainForm : Form
     {
 
+        private string _nameAutoran = "Clock";
+        private string _registr = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run";
+
+        //переменные для положения мыши
+        private Point _mouseOffset;
+        private bool _moving = false;
+
         ColorDialog backgroundDialog;
         ColorDialog foregroundDialog;
+
+        private Font _сustomFont;
+        PrivateFontCollection _fontCollection;
 
         public MainForm()
         {
@@ -24,8 +36,25 @@ namespace Clock
             backgroundDialog = new ColorDialog();
             foregroundDialog = new ColorDialog();
 
+            //установка кастомного шрифта
 
-            this.Load += MainForm_Load;
+            // нужно создать коллекцию шрифтов, что бы хагрузить в нее не системный шрифт
+            _fontCollection = new PrivateFontCollection();
+
+            // Загружаем шрифт из файла (лежит рядом с программой)
+            _fontCollection.AddFontFile("Forgotbi.ttf");
+
+            //устанавлваем шрифт во все нужные окна
+            labelTime.Font = new Font(_fontCollection.Families[0], 36f);
+            checkBoxShowDate.Font = new Font(_fontCollection.Families[0], 20f);
+            checkBoxShowWeekday.Font = new Font(_fontCollection.Families[0], 20f);
+            buttonHideControls.Font = new Font(_fontCollection.Families[0], 20f);
+            contextMenuStrip.Font = new Font(_fontCollection.Families[0], 12f);
+
+            //синхранизируем отметку режима AutoRun по реестру
+            CheckAutorunStatus();
+
+            //this.Load += MainForm_Load;
 
 
         }
@@ -33,14 +62,28 @@ namespace Clock
 
 
 
-        //обработчик события Load (Start Unity)
-        private void MainForm_Load(object sender, EventArgs e)
+
+
+
+        ///приватные методы ...................................................................................
+        ///
+        // для проверки статуса автозапуска при загрузке формы
+        private void CheckAutorunStatus()
         {
-            //получаем ширину окна
-            Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
-            //устанавливаем положение окна
-            this.Location = new Point(workingArea.Width - this.Width, 0);
+            try
+            {
+                object value = Registry.GetValue(_registr, _nameAutoran, null);
+                tsmiAutorun.Checked = (value != null && value.ToString() == Application.ExecutablePath);
+            }
+            catch
+            {
+                tsmiAutorun.Checked = false;
+            }
         }
+
+
+
+
 
         private void timer_Tick(object sender, EventArgs e)
         {
@@ -147,6 +190,76 @@ namespace Clock
             {
                 labelTime.ForeColor = foregroundDialog.Color;
             }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //обработчик автозапуска
+        private void tsmiAutorun_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+
+            //если галка отмечена - ВКЛЮЧАЕМ автозапуск
+            if (item.Checked)
+            {
+                //записываем в регистр автозапуска ссылку на нашу прошрамму
+                Registry.SetValue(_registr, _nameAutoran, Application.ExecutablePath);
+                MessageBox.Show("Автозапуск включен!");
+            }
+            //инаяе ОТКЛЮЧАЕМ
+            else
+            {
+                try
+                {
+                    using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true))
+                    {
+                        key?.DeleteValue(_nameAutoran, false);
+                    }
+                    MessageBox.Show("Автозапуск выключен!");
+                }
+                catch
+                {
+                    MessageBox.Show("Не удалось отключить автозапуск");
+                }
+            }
+        }
+
+        //нажатие мышью на labelTime
+        private void labelTime_MouseDown(object sender, MouseEventArgs e)
+        {
+
+            if (e.Button == MouseButtons.Left && tsmiShowControls.Checked == false)
+            {
+                _moving = true;
+                _mouseOffset = new Point(e.X, e.Y);
+
+                //e.X - Координата X курсора мыши относительно элемента (labelTime)
+                //e.Y - Координата Y курсора мыши относительно элемента
+
+                //изменяем курсор
+                if (sender is Control control) control.Cursor = Cursors.SizeAll;
+            }
+
+
+        }
+
+        //перемещение зажатой мыши
+        private void labelTime_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_moving)
+            {
+                Point currentPos = PointToScreen(e.Location);
+                this.Location = new Point(currentPos.X - _mouseOffset.X,
+                                          currentPos.Y - _mouseOffset.Y);
+            }
+        }
+
+        //отжатие мыши
+        private void labelTime_MouseUp(object sender, MouseEventArgs e)
+        {
+            _moving = false;
+
+            if (sender is Control control)
+                control.Cursor = Cursors.Default;
         }
     }
 }

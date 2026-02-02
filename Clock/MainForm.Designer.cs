@@ -62,12 +62,15 @@
             this.labelTime.BackColor = System.Drawing.SystemColors.Highlight;
             this.labelTime.ContextMenuStrip = this.contextMenuStrip;
             this.labelTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 32F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelTime.Location = new System.Drawing.Point(53, 48);
+            this.labelTime.Location = new System.Drawing.Point(53, 19);
             this.labelTime.Name = "labelTime";
             this.labelTime.Size = new System.Drawing.Size(388, 73);
             this.labelTime.TabIndex = 0;
             this.labelTime.Text = "CurrentTime";
             this.labelTime.DoubleClick += new System.EventHandler(this.labelTime_DoubleClick);
+            this.labelTime.MouseDown += new System.Windows.Forms.MouseEventHandler(this.labelTime_MouseDown);
+            this.labelTime.MouseMove += new System.Windows.Forms.MouseEventHandler(this.labelTime_MouseMove);
+            this.labelTime.MouseUp += new System.Windows.Forms.MouseEventHandler(this.labelTime_MouseUp);
             // 
             // contextMenuStrip
             // 
@@ -88,7 +91,7 @@
             this.toolStripSeparator5,
             this.tsmiExit});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(241, 355);
+            this.contextMenuStrip.Size = new System.Drawing.Size(203, 322);
             // 
             // tsmiTopmost
             // 
@@ -150,14 +153,14 @@
             // tsmiForegroundColor
             // 
             this.tsmiForegroundColor.Name = "tsmiForegroundColor";
-            this.tsmiForegroundColor.Size = new System.Drawing.Size(270, 34);
+            this.tsmiForegroundColor.Size = new System.Drawing.Size(254, 34);
             this.tsmiForegroundColor.Text = "Foreground color";
             this.tsmiForegroundColor.Click += new System.EventHandler(this.tsmiForegroundColor_Click);
             // 
             // tsmiBackgroundColor
             // 
             this.tsmiBackgroundColor.Name = "tsmiBackgroundColor";
-            this.tsmiBackgroundColor.Size = new System.Drawing.Size(270, 34);
+            this.tsmiBackgroundColor.Size = new System.Drawing.Size(254, 34);
             this.tsmiBackgroundColor.Text = "Background color";
             this.tsmiBackgroundColor.Click += new System.EventHandler(this.tsmiBackgroundColor_Click);
             // 
@@ -183,6 +186,7 @@
             this.tsmiAutorun.Name = "tsmiAutorun";
             this.tsmiAutorun.Size = new System.Drawing.Size(240, 32);
             this.tsmiAutorun.Text = "Autorun";
+            this.tsmiAutorun.Click += new System.EventHandler(this.tsmiAutorun_Click);
             // 
             // toolStripSeparator5
             // 
