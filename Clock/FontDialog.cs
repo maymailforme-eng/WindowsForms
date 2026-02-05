@@ -44,8 +44,11 @@ namespace Clock
             string[] files = Directory.GetFiles(path, extention);
             for (int i = 0; i < files.Length; ++i)
             {
+
                 pathsFonts.Add(files[i]); //сохраняем абсолютный путь к шрифту
                 files[i] = Path.GetFileName(files[i]);
+
+
             }
             comboBoxFonts.Items.AddRange(files);
 
@@ -80,6 +83,10 @@ namespace Clock
             pfc = new PrivateFontCollection();
             //pfc.AddFontFile(comboBoxFonts.SelectedItem.ToString());
             pfc.AddFontFile(pathsFonts[comboBoxFonts.SelectedIndex]); //выбираем по индексу 
+
+
+            //pfc.Families[0] - вернет ссылочный объект типа FontFamily, а не строку 
+            //при стирании pfc при ее локальном объявлении, получаем висячую ссылку
             labelExample.Font = new Font(pfc.Families[0], (float)numericUpDownFontSize.Value);
 
         }
