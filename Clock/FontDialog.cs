@@ -18,6 +18,8 @@ namespace Clock
         Form parent;
         //переменная для хранения коллекции шрифтов
         PrivateFontCollection pfc;
+        List<string> pathsFonts  = new List<string>();
+
         public Font Font_Dialog { get; private set; }
         public FontDialog(Form parent)
         {
@@ -42,6 +44,7 @@ namespace Clock
             string[] files = Directory.GetFiles(path, extention);
             for (int i = 0; i < files.Length; ++i)
             {
+                pathsFonts.Add(files[i]); //сохраняем абсолютный путь к шрифту
                 files[i] = Path.GetFileName(files[i]);
             }
             comboBoxFonts.Items.AddRange(files);
@@ -67,9 +70,16 @@ namespace Clock
 
         void ApplyFontExample()
         {
+            // Освобождаем предыдущую коллекцию
+            if (pfc != null)
+            {
+                pfc.Dispose();
+            }
+
             //используем сохранненую переменную
             pfc = new PrivateFontCollection();
-            pfc.AddFontFile(comboBoxFonts.SelectedItem.ToString());
+            //pfc.AddFontFile(comboBoxFonts.SelectedItem.ToString());
+            pfc.AddFontFile(pathsFonts[comboBoxFonts.SelectedIndex]); //выбираем по индексу 
             labelExample.Font = new Font(pfc.Families[0], (float)numericUpDownFontSize.Value);
 
         }
