@@ -17,6 +17,7 @@ namespace Clock
         ColorDialog foregroundDialog;
 
         FontDialog fontDialog;
+        Font FontMain;
 
         public MainForm()
         {
@@ -156,7 +157,11 @@ namespace Clock
         //клик по Font 
         private void tsmiFont_Click(object sender, EventArgs e)
         {
-            fontDialog.ShowDialog();
+            if (fontDialog.ShowDialog() == DialogResult.OK)
+            {
+                FontMain = fontDialog.Font_Dialog;
+                labelTime.Font = FontMain;
+            }
         }
     }
 }
