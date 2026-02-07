@@ -7,127 +7,119 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.IO;
+using System.IO;    //Input/Output
 using System.Runtime.InteropServices;
 using System.Drawing.Text;
+
 namespace Clock
 {
     public partial class FontDialog : Form
     {
-
-        Form parent;
-        //переменная для хранения коллекции шрифтов
         PrivateFontCollection pfc;
-        List<string> pathsFonts  = new List<string>();
+        MainForm parent;
+        Dictionary<string, string> fonts;
 
-        public Font Font_Dialog { get; private set; }
+        float fontSize;
+
+        public Font Font { get; private set; }
         public string FontFile { get; set; }
-        public FontDialog(Form parent)
+        public float FontSize 
+        
+        { 
+            get => fontSize;
+            set => numericUpDownFontSize.Value = (decimal)(fontSize =
+                value < (float)numericUpDownFontSize.Minimum ? (float)numericUpDownFontSize.Minimum :
+                value > (float)numericUpDownFontSize.Maximum ? (float)numericUpDownFontSize.Maximum :
+                value);
+
+
+
+        }
+        public FontDialog(MainForm parent, string fontFile)
         {
             InitializeComponent();
-            this.parent = parent;
+            pfc = null;
+            fonts = new Dictionary<string, string>();
+            this.FontFile = fontFile;
             this.StartPosition = FormStartPosition.Manual;
-
-            //this.Load += FontDialog_Load1;
+            this.parent = parent;
+            LoadFonts();
         }
-
-        //private void FontDialog_Load1(object sender, EventArgs e)
-        //{
-        //    pfc = new PrivateFontCollection();
-        //    pfc.AddFontFile(FontFile); //выбираем по индексу 
-        //    //при стирании pfc при ее локальном объявлении, получаем висячую ссылку
-        //    labelExample.Font = new Font(pfc.Families[0], (float)numericUpDownFontSize.Value);
-        //}
-
         void LoadFonts()
         {
-            AllocConsole();
-            //MessageBox.Show($"{Directory.GetParent(Application.StartupPath)?.Parent?.FullName}\\Fonts" );
+            //AllocConsole();
             Console.WriteLine(Application.ExecutablePath);
+            //Directory.SetCurrentDirectory($"{Application.ExecutablePath}");
             Directory.SetCurrentDirectory($"{Application.ExecutablePath}\\..\\..\\..\\Fonts");
+            //Console.WriteLine($"{Directory.GetParent(Application.StartupPath)?.Parent?.FullName}\\Fonts");
             Console.WriteLine(Directory.GetCurrentDirectory());
+            //LoadFonts(Directory.GetCurrentDirectory(), "*.otf");
+            //LoadFonts(Directory.GetCurrentDirectory(), "*.ttf");
             Traverse(Directory.GetCurrentDirectory());
+            comboBoxFonts.Items.AddRange(fonts.Keys.ToArray());
+            comboBoxFonts.SelectedIndex = 0;
+            comboBoxFonts.SelectedItem = this.FontFile.Split('\\').Last();
         }
-
-        void LoadFonts(string path, string extention)
+        void LoadFonts(string path, string extension)
         {
-            string[] files = Directory.GetFiles(path, extention);
-            for (int i = 0; i < files.Length; ++i)
+            string[] files = Directory.GetFiles(path, extension);
+            for (int i = 0; i < files.Length; i++)
             {
-
-                pathsFonts.Add(files[i]); //сохраняем абсолютный путь к шрифту
-                files[i] = Path.GetFileName(files[i]);
-
-
+                //Console.WriteLine(files[i]);
+                //files[i] = files[i].Split('\\').Last();
+                fonts.Add(files[i].Split('\\').Last()/*.Split('.').First()*/, files[i]);
             }
-            comboBoxFonts.Items.AddRange(files);
-
+            //comboBoxFonts.Items.AddRange(files);
         }
-
         void Traverse(string path)
-        { 
+        {
             LoadFonts(path, "*.ttf");
             LoadFonts(path, "*.otf");
             string[] directories = Directory.GetDirectories(path);
             if (directories.Length == 0) return;
-            for (int i = 0; i < directories.Length; ++i)
+            for (int i = 0; i < directories.Length; i++)
             {
                 Traverse(directories[i]);
             }
         }
-
         [DllImport("kernel32.dll")]
         public static extern void AllocConsole();
         [DllImport("kernel32.dll")]
         public static extern void FreeConsole();
 
-        void ApplyFontExample(string filename)
-        {
-            // Освобождаем предыдущую коллекцию
-            if (pfc != null)
-            {
-                pfc.Dispose();
-            }
-
-            //используем сохранненую переменную
-            pfc = new PrivateFontCollection();
-            //pfc.AddFontFile(comboBoxFonts.SelectedItem.ToString());
-            pfc.AddFontFile(pathsFonts[comboBoxFonts.SelectedIndex]); //выбираем по индексу 
-
-
-            //pfc.Families[0] - вернет ссылочный объект типа FontFamily, а не строку 
-            //при стирании pfc при ее локальном объявлении, получаем висячую ссылку
-            labelExample.Font = new Font(pfc.Families[0], (float)numericUpDownFontSize.Value);
-
-        }
-
-
-
         private void FontDialog_Load(object sender, EventArgs e)
         {
-            this.Location = new Point(this.parent.Location.X - this.Width / 3, this.parent.Location.Y + 120);
+            this.Location = new Point
+                (
+                    this.parent.Location.X - this.Width / 4,
+                    this.parent.Location.Y + 100
+                );
             //LoadFonts();
-            ApplyFontExample(FontFile);
+            //ApplyFontExample(FontFile);
         }
 
         private void buttonOK_Click(object sender, EventArgs e)
         {
-            //PrivateFontCollection pfc = new PrivateFontCollection();
-            // pfc.AddFontFile(comboBoxFonts.SelectedItem.ToString());
-            this.Font_Dialog = labelExample.Font;
-            this.FontFile = pathsFonts[comboBoxFonts.SelectedIndex];
+            this.Font = labelExample.Font;
+            this.FontFile = fonts[comboBoxFonts.SelectedItem.ToString()];
+            this.FontSize = (float)numericUpDownFontSize.Value; 
         }
-
+        public Font ApplyFontExample(string filename)
+        {
+            if (pfc != null) pfc.Dispose();
+            pfc = new PrivateFontCollection();
+            pfc.AddFontFile(filename);
+            
+            return labelExample.Font = new Font(pfc.Families[0], (float)numericUpDownFontSize.Value);
+        }
         private void comboBoxFonts_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ApplyFontExample(pathsFonts[comboBoxFonts.SelectedIndex]);
-
-
+            ApplyFontExample(fonts[comboBoxFonts.SelectedItem.ToString()]);
         }
 
         private void numericUpDownFontSize_ValueChanged(object sender, EventArgs e)
         {
-            ApplyFontExample(pathsFonts[comboBoxFonts.SelectedIndex]);
+            ApplyFontExample(fonts[comboBoxFonts.SelectedItem.ToString()]);
         }
     }
 }

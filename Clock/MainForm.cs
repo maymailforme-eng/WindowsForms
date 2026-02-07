@@ -7,41 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Win32;
 using System.IO;
 using System.Diagnostics;
+using Microsoft.Win32;
 
 namespace Clock
 {
     public partial class MainForm : Form
     {
-
         ColorDialog backgroundDialog;
         ColorDialog foregroundDialog;
-
         FontDialog fontDialog;
-        Font FontMain;
-
         public MainForm()
         {
             InitializeComponent();
-
+            this.Location = new Point
+                (
+                    Screen.PrimaryScreen.Bounds.Width - this.Width - 50,
+                    50
+                );
             tsmiShowControls.Checked = true;
             backgroundDialog = new ColorDialog();
             foregroundDialog = new ColorDialog();
-            fontDialog = new FontDialog(this);
-
-            this.Load += MainForm_Load;
-
+            //fontDialog = new FontDialog(this);
             LoadSettings();
         }
-
         void SaveSettings()
         {
-
-            string fileName = "Settings.ini";
             Directory.SetCurrentDirectory($"{Application.ExecutablePath}\\..\\..\\..");
-            StreamWriter writer = new StreamWriter(fileName);
+            string filename = "Settings.ini";
+            StreamWriter writer = new StreamWriter(filename);
             writer.WriteLine(tsmiTopmost.Checked);
             writer.WriteLine(tsmiShowControls.Checked);
             writer.WriteLine(tsmiShowDate.Checked);
@@ -50,106 +45,74 @@ namespace Clock
             writer.WriteLine(labelTime.BackColor.ToArgb());
             writer.WriteLine(labelTime.ForeColor.ToArgb());
             writer.WriteLine(fontDialog.FontFile);
+            writer.WriteLine(fontDialog.FontSize);
             writer.Close();
-
-            Process.Start("notepad", "fileName");
-        
+            Process.Start("notepad", filename);
         }
-
-
         void LoadSettings()
         {
-            string fileName = "Settings.ini";
             Directory.SetCurrentDirectory($"{Application.ExecutablePath}\\..\\..\\..");
-            StreamReader reader = new StreamReader(fileName);
-            tsmiTopmost.Checked = bool.Parse(reader.ReadLine());
-            tsmiShowControls.Checked = bool.Parse(reader.ReadLine());
-            tsmiShowDate.Checked = bool.Parse(reader.ReadLine());
-            tsmiShowWeekday.Checked = bool.Parse(reader.ReadLine());
-            tsmiAutorun.Checked = bool.Parse(reader.ReadLine());
+            StreamReader reader = null;
+            try
+            {
+                reader = new StreamReader("Settings.ini");
+                tsmiTopmost.Checked = bool.Parse(reader.ReadLine());
+                tsmiShowControls.Checked = bool.Parse(reader.ReadLine());
+                tsmiShowDate.Checked = bool.Parse(reader.ReadLine());
+                tsmiShowWeekday.Checked = bool.Parse(reader.ReadLine());
+                tsmiAutorun.Checked = bool.Parse(reader.ReadLine());
+                labelTime.BackColor = backgroundDialog.Color = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
+                labelTime.ForeColor = foregroundDialog.Color = Color.FromArgb(Convert.ToInt32(reader.ReadLine()));
+                //fontDialog = new FontDialog(this);
+                //fontDialog.FontFile = reader.ReadLine();
+                fontDialog = new FontDialog(this, reader.ReadLine());
+                fontDialog.FontSize = (float)Convert.ToDouble(reader.ReadLine());
 
-            labelTime.BackColor = backgroundDialog.Color = Color.FromArgb(int.Parse(reader.ReadLine()));
-            labelTime.ForeColor = foregroundDialog.Color = Color.FromArgb(int.Parse(reader.ReadLine()));
 
-            //fontDialog = new FontDialog(this);
-            fontDialog.FontFile = reader.ReadLine();
-
-
-            reader.Close();
-
-
-
-        }
-
-        //обработчик события Load (Start Unity)
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-            //получаем ширину окна
-            Rectangle workingArea = Screen.PrimaryScreen.WorkingArea;
-            //устанавливаем положение окна
-            this.Location = new Point(workingArea.Width - this.Width, 0);
+                labelTime.Font = fontDialog.ApplyFontExample(fontDialog.FontFile);
+                
+                //reader.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message);
+            }
+            if(reader != null) { reader.Close(); }
         }
 
         private void timer_Tick(object sender, EventArgs e)
         {
-            labelTime.Text = DateTime.Now.ToString("hh:mm:ss tt", System.Globalization.CultureInfo.InvariantCulture);
-
+            labelTime.Text = DateTime.Now.ToString
+                (
+                "hh:mm:ss tt",
+                System.Globalization.CultureInfo.InvariantCulture
+                );
             if (checkBoxShowDate.Checked)
-            {
                 labelTime.Text += $"\n{DateTime.Now.ToString("yyyy.MM.dd")}";
-            }
-
             if (checkBoxShowWeekday.Checked)
-            {
                 labelTime.Text += $"\n{DateTime.Now.DayOfWeek}";
-            }
-
             notifyIcon.Text = labelTime.Text;
         }
-
-
         void SetVisibility(bool visible)
         {
-            checkBoxShowDate.Visible = visible;
-            checkBoxShowWeekday.Visible = visible;
-            buttonHideControls.Visible = visible;
-            this.ShowInTaskbar = visible;
-
-            this.FormBorderStyle = visible ? FormBorderStyle.FixedToolWindow : FormBorderStyle.None;
-            this.TransparencyKey = visible ? Color.Empty : this.BackColor;
+            checkBoxShowDate.Visible = visible; //Делает 'checkBoxShowDate' невидимым
+            checkBoxShowWeekday.Visible = visible;//Делает 'checkBoxShowWeekday' невидимым
+            buttonHideControls.Visible = visible; //Делает кнопку 'buttonHideControls' невидимой
+            this.ShowInTaskbar = visible;//Скрываем кнопку приложения в панели задач
+            this.FormBorderStyle = visible ? FormBorderStyle.FixedToolWindow : FormBorderStyle.None;//Полностью убираем границы окна.
+            this.TransparencyKey = visible ? Color.Empty : this.BackColor;//Делаем окно прозрачным.
+                                                                          //Для того чтобы сделать окно прозрачным, его TransparencyKey должен совпадать с BackColor.
         }
+        private void buttonHideControls_Click(object sender, EventArgs e) => tsmiShowControls.Checked = false;
+        private void labelTime_DoubleClick(object sender, EventArgs e) => tsmiShowControls.Checked = true;
 
-        //обработчик кнопки buttonHideContols
-        private void buttonHideControls_Click(object sender, EventArgs e)
-        {
-            tsmiShowControls.Checked = false;
-        }
-
-        private void labelTime_DoubleClick(object sender, EventArgs e)
-        {
-            tsmiShowControls.Checked = true;
-        }
-
-        //обработчик Topmost
-        private void tsmiTopmost_CheckedChanged(object sender, EventArgs e)
-        {
+        private void tsmiTopmost_CheckedChanged(object sender, EventArgs e) =>
             //this.TopMost = tsmiTopmost.Checked;
-
+            //this.TopMost = ((ToolStripMenuItem)sender).Checked;
             this.TopMost = (sender as ToolStripMenuItem).Checked;
-        }
 
-
-        //обработчик tsmiShowControls
-        private void tsmiShowControls_CheckedChanged(object sender, EventArgs e)
-        {
-            SetVisibility(tsmiShowControls.Checked);
-        }
-
-
-        private void tsmiExit_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
+        private void tsmiShowControls_CheckedChanged(object sender, EventArgs e) => SetVisibility(tsmiShowControls.Checked);
+        private void tsmiExit_Click(object sender, EventArgs e) => this.Close();
 
         private void notifyIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -160,25 +123,17 @@ namespace Clock
             }
         }
 
-        private void checkBoxShowDate_CheckedChanged(object sender, EventArgs e)
-        {
+        private void checkBoxShowDate_CheckedChanged(object sender, EventArgs e) =>
             tsmiShowDate.Checked = (sender as CheckBox).Checked;
-        }
 
-        private void checkBoxShowWeekday_CheckedChanged(object sender, EventArgs e)
-        {
+        private void checkBoxShowWeekday_CheckedChanged(object sender, EventArgs e) =>
             tsmiShowWeekday.Checked = (sender as CheckBox).Checked;
-        }
 
-        private void tsmiShowDate_CheckedChanged(object sender, EventArgs e)
-        {
+        private void tsmiShowDate_CheckedChanged(object sender, EventArgs e) =>
             checkBoxShowDate.Checked = (sender as ToolStripMenuItem).Checked;
-        }
 
-        private void tsmiShowWeekday_CheckedChanged(object sender, EventArgs e)
-        {
+        private void tsmiShowWeekday_CheckedChanged(object sender, EventArgs e) =>
             checkBoxShowWeekday.Checked = (sender as ToolStripMenuItem).Checked;
-        }
 
         private void tsmiBackgroundColor_Click(object sender, EventArgs e)
         {
@@ -192,32 +147,28 @@ namespace Clock
         private void tsmiForegroundColor_Click(object sender, EventArgs e)
         {
             if (foregroundDialog.ShowDialog() == DialogResult.OK)
-            {
                 labelTime.ForeColor = foregroundDialog.Color;
-            }
         }
 
-        
-        //клик по Font 
         private void tsmiFont_Click(object sender, EventArgs e)
         {
             if (fontDialog.ShowDialog() == DialogResult.OK)
             {
-                FontMain = fontDialog.Font_Dialog;
-                labelTime.Font = FontMain;
+                labelTime.Font = fontDialog.Font;
             }
         }
 
         private void tsmiAutorun_CheckedChanged(object sender, EventArgs e)
         {
             string key_name = "Clock_PV_522";
-            RegistryKey rk = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            RegistryKey rk = Registry.CurrentUser.
+                OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);//true - открыть ветку на запись.
             if (tsmiAutorun.Checked) rk.SetValue(key_name, Application.ExecutablePath);
             else rk.DeleteValue(key_name, false);
+            //false - НЕ бросать исключение при отсутствии удаляемой ветки.
             rk.Dispose();
         }
 
-        //событие закрытия
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             SaveSettings();
