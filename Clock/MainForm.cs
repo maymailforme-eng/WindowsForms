@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using System.IO;
+using System.Diagnostics;
 
 namespace Clock
 {
@@ -29,14 +31,55 @@ namespace Clock
             foregroundDialog = new ColorDialog();
             fontDialog = new FontDialog(this);
 
-
             this.Load += MainForm_Load;
 
-            
+            LoadSettings();
+        }
+
+        void SaveSettings()
+        {
+
+            string fileName = "Settings.ini";
+            Directory.SetCurrentDirectory($"{Application.ExecutablePath}\\..\\..\\..");
+            StreamWriter writer = new StreamWriter(fileName);
+            writer.WriteLine(tsmiTopmost.Checked);
+            writer.WriteLine(tsmiShowControls.Checked);
+            writer.WriteLine(tsmiShowDate.Checked);
+            writer.WriteLine(tsmiShowWeekday.Checked);
+            writer.WriteLine(tsmiAutorun.Checked);
+            writer.WriteLine(labelTime.BackColor.ToArgb());
+            writer.WriteLine(labelTime.ForeColor.ToArgb());
+            writer.WriteLine(fontDialog.FontFile);
+            writer.Close();
+
+            Process.Start("notepad", "fileName");
+        
         }
 
 
+        void LoadSettings()
+        {
+            string fileName = "Settings.ini";
+            Directory.SetCurrentDirectory($"{Application.ExecutablePath}\\..\\..\\..");
+            StreamReader reader = new StreamReader(fileName);
+            tsmiTopmost.Checked = bool.Parse(reader.ReadLine());
+            tsmiShowControls.Checked = bool.Parse(reader.ReadLine());
+            tsmiShowDate.Checked = bool.Parse(reader.ReadLine());
+            tsmiShowWeekday.Checked = bool.Parse(reader.ReadLine());
+            tsmiAutorun.Checked = bool.Parse(reader.ReadLine());
 
+            labelTime.BackColor = backgroundDialog.Color = Color.FromArgb(int.Parse(reader.ReadLine()));
+            labelTime.ForeColor = foregroundDialog.Color = Color.FromArgb(int.Parse(reader.ReadLine()));
+
+            //fontDialog = new FontDialog(this);
+            fontDialog.FontFile = reader.ReadLine();
+
+
+            reader.Close();
+
+
+
+        }
 
         //обработчик события Load (Start Unity)
         private void MainForm_Load(object sender, EventArgs e)
@@ -172,6 +215,12 @@ namespace Clock
             if (tsmiAutorun.Checked) rk.SetValue(key_name, Application.ExecutablePath);
             else rk.DeleteValue(key_name, false);
             rk.Dispose();
+        }
+
+        //событие закрытия
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveSettings();
         }
     }
 }

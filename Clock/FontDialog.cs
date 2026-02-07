@@ -21,13 +21,23 @@ namespace Clock
         List<string> pathsFonts  = new List<string>();
 
         public Font Font_Dialog { get; private set; }
+        public string FontFile { get; set; }
         public FontDialog(Form parent)
         {
             InitializeComponent();
             this.parent = parent;
             this.StartPosition = FormStartPosition.Manual;
 
+            //this.Load += FontDialog_Load1;
         }
+
+        //private void FontDialog_Load1(object sender, EventArgs e)
+        //{
+        //    pfc = new PrivateFontCollection();
+        //    pfc.AddFontFile(FontFile); //выбираем по индексу 
+        //    //при стирании pfc при ее локальном объявлении, получаем висячую ссылку
+        //    labelExample.Font = new Font(pfc.Families[0], (float)numericUpDownFontSize.Value);
+        //}
 
         void LoadFonts()
         {
@@ -71,7 +81,7 @@ namespace Clock
         [DllImport("kernel32.dll")]
         public static extern void FreeConsole();
 
-        void ApplyFontExample()
+        void ApplyFontExample(string filename)
         {
             // Освобождаем предыдущую коллекцию
             if (pfc != null)
@@ -96,7 +106,8 @@ namespace Clock
         private void FontDialog_Load(object sender, EventArgs e)
         {
             this.Location = new Point(this.parent.Location.X - this.Width / 3, this.parent.Location.Y + 120);
-            LoadFonts();
+            //LoadFonts();
+            ApplyFontExample(FontFile);
         }
 
         private void buttonOK_Click(object sender, EventArgs e)
@@ -104,18 +115,19 @@ namespace Clock
             //PrivateFontCollection pfc = new PrivateFontCollection();
             // pfc.AddFontFile(comboBoxFonts.SelectedItem.ToString());
             this.Font_Dialog = labelExample.Font;
+            this.FontFile = pathsFonts[comboBoxFonts.SelectedIndex];
         }
 
         private void comboBoxFonts_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ApplyFontExample();
+            ApplyFontExample(pathsFonts[comboBoxFonts.SelectedIndex]);
 
 
         }
 
         private void numericUpDownFontSize_ValueChanged(object sender, EventArgs e)
         {
-            ApplyFontExample();
+            ApplyFontExample(pathsFonts[comboBoxFonts.SelectedIndex]);
         }
     }
 }
