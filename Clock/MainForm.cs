@@ -13,11 +13,17 @@ using Microsoft.Win32;
 
 namespace Clock
 {
+
+
     public partial class MainForm : Form
     {
         ColorDialog backgroundDialog;
         ColorDialog foregroundDialog;
         FontDialog fontDialog;
+
+        //переменные для положения мыши
+        private Point _mouseOffset;
+        private bool _moving = false;
         public MainForm()
         {
             InitializeComponent();
@@ -177,5 +183,49 @@ namespace Clock
         {
             SaveSettings();
         }
+
+
+
+
+
+        //нажатие мышью на labelTime
+        private void labelTime_MouseDown(object sender, MouseEventArgs e)
+        {
+
+            if (e.Button == MouseButtons.Left)
+            {
+                _moving = true;
+                _mouseOffset = new Point(e.X, e.Y);
+
+                //e.X - Координата X курсора мыши относительно элемента (labelTime)
+                //e.Y - Координата Y курсора мыши относительно элемента
+
+                //изменяем курсор
+                if (sender is Control control) control.Cursor = Cursors.SizeAll;
+            }
+
+
+        }
+
+        //перемещение зажатой мыши
+        private void labelTime_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_moving)
+            {
+                Point currentPos = PointToScreen(e.Location);
+                this.Location = new Point(currentPos.X - _mouseOffset.X,
+                                          currentPos.Y - _mouseOffset.Y);
+            }
+        }
+
+        //отжатие мыши
+        private void labelTime_MouseUp(object sender, MouseEventArgs e)
+        {
+            _moving = false;
+
+            if (sender is Control control)
+                control.Cursor = Cursors.Default;
+        }
+
     }
 }
